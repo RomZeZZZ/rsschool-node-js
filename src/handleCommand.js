@@ -11,48 +11,50 @@ import osInfo from "./os/os.js";
 import calculateHash from "./hash/calcHash.js";
 const handleCommand = async (rlCommand) => {
     try {
-        const commandArr = rlCommand.trim().replace(/\s+/g, ' ').split(' '); 
+        const regex = /[^\s"']+|"([^"]*)"/g; // find "fol der with spaces"
+        const commandLine = rlCommand.trim(); 
+        const args = commandLine.match(regex).map(arg => arg.replace(/(^"|"$)/g, '')); // delete ""
         switch (true) {
-            case commandArr[0] === 'up':
+            case args[0] === 'up':
                 upDir();
                 break;
-            case commandArr[0] === 'cd':
-                if(commandArr.length === 2) cd(commandArr[1])
+            case args[0] === 'cd':
+                if(args.length === 2) cd(args[1])
                 else throw new Error('Wrong data in arguments');
                 break;
-            case commandArr[0] === 'ls':
+            case args[0] === 'ls':
                 await list();
                 break;
-            case commandArr[0] === 'cat':
-                if(commandArr.length === 2) await readStream(commandArr[1])
+            case args[0] === 'cat':
+                if(args.length === 2) await readStream(args[1])
                 else throw new Error('Wrong data in arguments');
                 break;
-            case commandArr[0] === 'add':
-                if(commandArr.length === 2) await create(commandArr[1])
+            case args[0] === 'add':
+                if(args.length === 2) await create(args[1])
                 else throw new Error('Wrong data in arguments');
                 break;
-            case commandArr[0] === 'rn':
-                if(commandArr.length === 3) await rename(commandArr[1], commandArr[2])
+            case args[0] === 'rn':
+                if(args.length === 3) await rename(args[1], args[2])
                 else throw new Error('Wrong data in arguments');
                 break;
-            case commandArr[0] === 'cp':
-                if(commandArr.length === 3) await copyFile(commandArr[1], commandArr[2])
+            case args[0] === 'cp':
+                if(args.length === 3) await copyFile(args[1], args[2])
                 else throw new Error('Wrong data in arguments');
                 break;
-            case commandArr[0] === 'mv':
-                if(commandArr.length === 3) await moveFile(commandArr[1], commandArr[2])
+            case args[0] === 'mv':
+                if(args.length === 3) await moveFile(args[1], args[2])
                 else throw new Error('Wrong data in arguments');
                 break;
-            case commandArr[0] === 'rm':
-                if(commandArr.length === 2) await remove(commandArr[1])
+            case args[0] === 'rm':
+                if(args.length === 2) await remove(args[1])
                 else throw new Error('Wrong data in arguments');
                 break;
-            case commandArr[0] === 'os':
-                if(commandArr.length === 2) await osInfo(commandArr[1])
+            case args[0] === 'os':
+                if(args.length === 2) await osInfo(args[1])
                 else throw new Error('Wrong data in arguments');
                 break;
-            case commandArr[0] === 'hash':
-                if(commandArr.length === 2) await calculateHash(commandArr[1])
+            case args[0] === 'hash':
+                if(args.length === 2) await calculateHash(args[1])
                 else throw new Error('Wrong data in arguments');
                 break;
             default:
