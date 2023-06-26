@@ -9,11 +9,13 @@ import moveFile from "./streams/mv.js";
 import remove from "./fs/delete.js";
 import osInfo from "./os/os.js";
 import calculateHash from "./hash/calcHash.js";
+import compress from "./zip/compress.js";
+import decompress from "./zip/decompress.js";
 const handleCommand = async (rlCommand) => {
     try {
-        const regex = /[^\s"']+|"([^"]*)"/g; // find "fol der with spaces"
+        const regex = /[^\s"']+|"([^"]*)"/g; // find paths with spaces " ... "
         const commandLine = rlCommand.trim(); 
-        const args = commandLine.match(regex).map(arg => arg.replace(/(^"|"$)/g, '')); // delete ""
+        const args = commandLine.match(regex).map(arg => arg.replace(/(^"|"$)/g, '')); // delete "
         switch (true) {
             case args[0] === 'up':
                 upDir();
@@ -55,6 +57,14 @@ const handleCommand = async (rlCommand) => {
                 break;
             case args[0] === 'hash':
                 if(args.length === 2) await calculateHash(args[1])
+                else throw new Error('Wrong data in arguments');
+                break;
+            case args[0] === 'compress':
+                if(args.length === 3) await compress(args[1], args[2])
+                else throw new Error('Wrong data in arguments');
+                break;
+            case args[0] === 'decompress':
+                if(args.length === 3) await decompress(args[1], args[2])
                 else throw new Error('Wrong data in arguments');
                 break;
             default:

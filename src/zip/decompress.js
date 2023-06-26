@@ -2,8 +2,8 @@ import { createReadStream, createWriteStream } from 'fs';
 import { resolve, join, dirname } from 'path';
 import { fileURLToPath } from 'url';
 import zlib from 'zlib';
-import { access, constants } from 'fs/promises';
-const decompress = async () => {
+import { access, constants, stat } from 'fs/promises';
+const decompress = async (pathToFile, pathToDest) => {
   try {
     const rootPath = dirname(fileURLToPath(import.meta.url));
     const compressedFilePath = resolve(join(rootPath, 'files', 'archive.gz'));
@@ -27,4 +27,4 @@ const decompress = async () => {
   }
 };
 
-await decompress();
+export default decompress;

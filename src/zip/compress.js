@@ -1,30 +1,39 @@
 import { createReadStream, createWriteStream } from 'fs';
-import { resolve, join, dirname } from 'path';
-import { fileURLToPath } from 'url';
+import { resolve } from 'path';
+import { basename, extname } from 'node:path';
 import { access, constants } from 'fs/promises';
-import zlib from 'zlib';
-const compress = async () => {
+import { pipeline as pipelineAsync } from 'stream/promises';
+import { createBrotliCompress } from 'zlib';
+const compress = async (pathToFile, pathToDest) => {
     try {
-        const rootPath = dirname(fileURLToPath(import.meta.url));
-        const filePath = resolve(join(rootPath, 'files', 'fileToCompress.txt'));
-        const compressedFilePath = resolve(join(rootPath, 'files', 'archive.gz'));
-        const fileExist = await access(filePath, constants.F_OK)
+        const initialPath = resolve(process.cwd(), pathToFile);
+        const pathToDir = resolve(process.cwd(), pathToDest);
+        let newFilePath;
+        const compressFileName = basename(initialPath, extname(initialPath)) + '.br';
+        if (pathToDir.slice(-3) === '.br') {
+            newFilePath = pathToDir;
+        } else {
+            newFilePath = resolve(pathToDir, compressFileName);
+        }
+        const isfileExist = await access(initialPath, constants.F_OK)
         .then(() => { return true })
         .catch(() => { return false });
-        if (fileExist) {
-            const readStream = createReadStream(filePath);
-            const writeStream = createWriteStream(compressedFilePath);
-            const gzip = zlib.createGzip();
-            readStream.pipe(gzip).pipe(writeStream);
-            writeStream.on('finish', () => {
-              console.log('File compression completed.');
-            });
+        const isNewFileExist = await access(newFilePath, constants.F_OK)
+        .then(() => { return true })
+        .catch(() => { return false });
+        if (isfileExist && !isNewFileExist) {
+            const readStream = createReadStream(initialPath);
+            const writeStream = createWriteStream(newFilePath);
+            const compressStream = createBrotliCompress();
+            await pipelineAsync(readStream, compressStream, writeStream);
+        } else if (!isfileExist){
+            throw new Error(`Operation failed. Initial file doesnt exist.`);
         } else {
-            throw new Error('Compressing file missing.');
+            throw new Error('Operation failed. Compressed file already exist.');
         }
     } catch (error) {
-        console.log(error.message)
+        console.log(error.message);
     }
     
 }
-await compress();
+export default compress;
